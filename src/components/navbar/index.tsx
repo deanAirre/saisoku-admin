@@ -55,7 +55,7 @@ export default function Navbar() {
     <>
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-50">
-        <img src={saisoku_logo} alt="Logo" className="h-10" />
+        <img src={saisoku_logo} alt="Logo" className="h-20" />
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           className="p-2 hover:bg-gray-100 rounded-lg transition"
@@ -83,7 +83,7 @@ export default function Navbar() {
         {/* Logo Section */}
         <div className="h-20 flex items-center justify-center border-b border-gray-200 px-4">
           {!isCollapsed ? (
-            <img src={saisoku_logo} alt="Logo" className="h-16" />
+            <img src={saisoku_logo} alt="Logo" className="h-30" />
           ) : (
             <div className="w-12 h-12 bg-[#0ABAB5] rounded-lg flex items-center justify-center text-white font-bold text-lg">
               {" "}
