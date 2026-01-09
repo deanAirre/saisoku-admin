@@ -40,8 +40,8 @@ function OrderList() {
     try {
       setLoading(true);
       const status = filterStatus === "all" ? undefined : filterStatus;
-      const data = await fetchAllOrders(status);
-      setOrders(data);
+      const data = await fetchAllOrders({ status }); // ✅ pass as object
+      setOrders(data.orders); // ✅ extract orders array
     } catch (error) {
       console.error("Failed to load orders:", error);
     } finally {
@@ -68,7 +68,7 @@ function OrderList() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 lg:p-6">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Orders</h1>

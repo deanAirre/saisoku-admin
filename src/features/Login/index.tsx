@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import backgroundImg from "../../assets/saisoku_wall_1.jpg";
 import { Eye, EyeOff } from "lucide-react";
-import { useAdmin } from "../../context/user-context";
+import { useAdmin } from "../../context/admin-context";
 import { loginAdmin } from "../../services/user/admin/api";
 
 const LoginPage = () => {

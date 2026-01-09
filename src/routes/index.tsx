@@ -1,18 +1,53 @@
 import { createBrowserRouter } from "react-router";
 import Layout from "../components/layout/layout";
-import Home from "../features/Home";
 import LoginPage from "../features/Login";
+import OrderList from "../features/Order";
+import ProtectedRoute from "./ProtectedRoutes";
+import OrderDetail from "../features/OrderDetail";
+import MaintenancePage from "../components/maintenancepage";
+import Home from "../features/Home";
 
 export const routes = createBrowserRouter([
   {
-    path: "/",
-    element: <Layout />,
+    path: "/admin",
+    element: (
+      <ProtectedRoute>
+        <Layout />
+      </ProtectedRoute>
+    ),
     children: [
-      { index: true, element: <Home /> },
       {
-        path: "admin/login",
-        element: <LoginPage />,
+        path: "orders",
+        element: <OrderList />,
+      },
+      {
+        path: "orders/:orderId",
+        element: <OrderDetail />,
+      },
+      {
+        path: "products",
+        element: <MaintenancePage />,
+      },
+      {
+        path: "admins",
+        element: <MaintenancePage />,
+      },
+      {
+        path: "products/:id",
+        element: <MaintenancePage />,
+      },
+      {
+        index: true,
+        element: <Home />,
+      },
+      {
+        path: "settings",
+        element: <MaintenancePage />,
       },
     ],
+  },
+  {
+    path: "/admin/login",
+    element: <LoginPage />,
   },
 ]);

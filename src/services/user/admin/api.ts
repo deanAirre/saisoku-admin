@@ -13,17 +13,6 @@ export const loginAdmin = async (credentials: AdminLoginRequest) => {
 
   if (error) throw error;
 
-  // Verify user is in admins table
-  const { data: adminProfile, error: adminError } = await supabase
-    .from("admins")
-    .select("id")
-    .eq("id", data.user?.id)
-    .single();
-
-  if (adminError || !adminProfile) {
-    throw new Error("Not authorized as admin");
-  }
-
   return { user: data.user, session: data.session };
 };
 
@@ -49,7 +38,7 @@ export const registerAdmin = async (adminData: AdminRegisterRequest) => {
   if (!data.user) throw new Error("Failed to create user");
 
   // Create admin profile
-  const { error: profileError } = await supabase.from("admin").insert({
+  const { error: profileError } = await supabase.from("admins").insert({
     id: data.user.id,
     name: adminData.name,
     email: adminData.email,

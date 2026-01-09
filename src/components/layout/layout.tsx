@@ -1,12 +1,14 @@
 import { Outlet } from "react-router-dom";
 import { ScrollToTop } from "../scrolltotop";
+import Navbar from "../navbar";
 const Layout = () => {
   return (
-    <div className="flex flex-col min-h-screen w-full">
+    <div className="flex min-h-screen bg-gray-50">
       <ScrollToTop />
-      <div className="flex-1 overflow-auto">
+      <Navbar></Navbar>
+      <main className="flex flex-col min-h-screen w-full">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 };
