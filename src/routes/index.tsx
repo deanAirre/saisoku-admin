@@ -1,4 +1,4 @@
-import { createHashRouter } from "react-router";
+import { createHashRouter, Navigate } from "react-router";
 import Layout from "../components/layout/layout";
 import LoginPage from "../features/Login";
 import OrderList from "../features/Order";
@@ -49,5 +49,9 @@ export const routes = createHashRouter([
         element: <MaintenancePage />,
       },
     ],
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
   },
 ]);
