@@ -9,6 +9,10 @@ import Home from "../features/Home";
 
 export const routes = createHashRouter([
   {
+    path: "/",
+    element: <LoginPage />,
+  },
+  {
     path: "/admin",
     element: (
       <ProtectedRoute>
@@ -45,9 +49,5 @@ export const routes = createHashRouter([
         element: <MaintenancePage />,
       },
     ],
-  },
-  {
-    path: "/admin/login",
-    element: <LoginPage />,
   },
 ]);
