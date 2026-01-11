@@ -40,7 +40,7 @@ export default function Navbar() {
   const handleLogout = async () => {
     if (confirm("Are you sure you want to logout?")) {
       await signOut();
-      navigate("/admin/login");
+      navigate("/");
     }
   };
 
