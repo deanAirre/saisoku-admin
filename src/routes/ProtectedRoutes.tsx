@@ -28,12 +28,12 @@ const ProtectedRoute = ({ children }: AdminProtectedRouteProps) => {
 
   // Not logged in at all - redirect to admin login
   if (!authUser) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   // Logged in but not an admin - redirect to admin login with error
   if (!isAdmin) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   // All checks passed - render protected content
