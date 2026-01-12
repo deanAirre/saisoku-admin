@@ -104,9 +104,12 @@ export default function OrderDetail() {
 
     setActionLoading(true);
     try {
-      // TODO: Pass admin notes when implemented
       await approvePayment(orderId!);
-      await loadOrder(); // Reload to get updated status
+
+      // Add a small delay to ensure database is updated
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      await loadOrder(); // This should fetch updated payment proof
       alert("Payment approved successfully!");
     } catch (err: any) {
       alert(err.message || "Failed to approve payment");
@@ -212,10 +215,10 @@ export default function OrderDetail() {
               onChange={(e) =>
                 handleStatusChange(e.target.value as OrderStatus)
               }
-              disabled={actionLoading}
+              disabled={actionLoading || paymentProof?.status === "pending"} // Disable if payment proof is pending
               className={`px-4 py-2 rounded-lg border-2 font-semibold text-sm cursor-pointer transition ${
                 STATUS_COLORS[order.status]
-              }`}
+              } ${paymentProof?.status === "pending" ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {ORDER_STATUSES.map((status) => (
                 <option key={status} value={status}>

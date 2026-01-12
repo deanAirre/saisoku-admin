@@ -136,9 +136,13 @@ export const updateOrderStatus = async (
 /**
  * Admin: Get payment proof for an order
  */
+/**
+ * Admin: Get payment proof for an order
+ */
 export const getPaymentProofAdmin = async (
   orderId: string,
 ): Promise<PaymentProof | null> => {
+  // First, get the payment proof record
   const { data, error } = await supabase
     .from("payment_proofs")
     .select("*")
@@ -147,8 +151,59 @@ export const getPaymentProofAdmin = async (
     .limit(1)
     .maybeSingle();
 
-  if (error) throw error;
-  return data;
+  if (error) {
+    console.error("Error fetching payment proof:", error);
+    throw error;
+  }
+
+  if (!data) {
+    console.log("No payment proof found for order:", orderId);
+    return null;
+  }
+
+  console.log("Payment proof data:", data);
+
+  // Extract file path from URL
+  // The bucket name is OrderReceipts (case-sensitive!)
+  const bucketName = "OrderReceipts";
+
+  // Try different URL patterns
+  let imagePath = "";
+
+  // Pattern 1: /storage/v1/object/public/OrderReceipts/path
+  if (data.image_url.includes("/storage/v1/object/public/OrderReceipts/")) {
+    imagePath = data.image_url.split(
+      "/storage/v1/object/public/OrderReceipts/",
+    )[1];
+  }
+  // Pattern 2: /storage/v1/object/OrderReceipts/path (no 'public')
+  else if (data.image_url.includes("/storage/v1/object/OrderReceipts/")) {
+    imagePath = data.image_url.split("/storage/v1/object/OrderReceipts/")[1];
+  }
+
+  if (!imagePath) {
+    console.error("Could not extract path from URL:", data.image_url);
+    return data; // Return with original URL
+  }
+
+  console.log("Extracted image path:", imagePath);
+
+  // Generate signed URL
+  const { data: signedUrlData, error: urlError } = await supabase.storage
+    .from(bucketName)
+    .createSignedUrl(imagePath, 3600);
+
+  if (urlError) {
+    console.error("Failed to create signed URL:", urlError);
+    return data;
+  }
+
+  console.log("Signed URL generated successfully");
+
+  return {
+    ...data,
+    image_url: signedUrlData.signedUrl,
+  };
 };
 
 /**
