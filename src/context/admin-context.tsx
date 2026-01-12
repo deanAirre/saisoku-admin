@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
@@ -30,6 +31,8 @@ interface AdminContextType {
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
+const INACTIVITY_TIMEOUT = 3600000; // 1 hour in milliseconds
+
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -38,6 +41,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
+  const inactivityTimeoutRef = useRef<number | null>(null);
 
   // Fetch admin profile from database
   const fetchAdmin = useCallback(async () => {
@@ -89,6 +93,10 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({
   // Sign out
   const signOut = useCallback(async () => {
     try {
+      if (inactivityTimeoutRef.current) {
+        window.clearTimeout(inactivityTimeoutRef.current); // Add window.
+      }
+
       await logoutAdmin();
       setAdmin(null);
       setAuthUser(null);
@@ -97,6 +105,24 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({
       throw err;
     }
   }, []);
+
+  // Reset inactivity timer
+  const resetInactivityTimer = useCallback(() => {
+    if (inactivityTimeoutRef.current) {
+      window.clearTimeout(inactivityTimeoutRef.current); // Add window.
+    }
+
+    if (!authUser) return;
+
+    inactivityTimeoutRef.current = window.setTimeout(async () => {
+      // Add window.
+      console.log("Session expired due to inactivity");
+      await signOut();
+      alert(
+        "Your session has expired due to 1 hour of inactivity. Please log in again.",
+      );
+    }, INACTIVITY_TIMEOUT);
+  }, [authUser, signOut]);
 
   // Listen for auth changes
   useEffect(() => {
@@ -129,6 +155,33 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({
       setLoading(false);
     }
   }, [authUser, authLoading, fetchAdmin]);
+
+  // Inactivity tracking
+  useEffect(() => {
+    if (!authUser) {
+      if (inactivityTimeoutRef.current) {
+        window.clearTimeout(inactivityTimeoutRef.current);
+      }
+      return;
+    }
+
+    resetInactivityTimer();
+
+    const events = ["mousedown", "keydown", "scroll", "touchstart", "click"];
+
+    events.forEach((event) => {
+      document.addEventListener(event, resetInactivityTimer);
+    });
+
+    return () => {
+      if (inactivityTimeoutRef.current) {
+        window.clearTimeout(inactivityTimeoutRef.current);
+      }
+      events.forEach((event) => {
+        document.removeEventListener(event, resetInactivityTimer);
+      });
+    };
+  }, [authUser, resetInactivityTimer]);
 
   const value: AdminContextType = {
     admin,

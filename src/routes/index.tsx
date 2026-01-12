@@ -6,6 +6,7 @@ import ProtectedRoute from "./ProtectedRoutes";
 import OrderDetail from "../features/OrderDetail";
 import MaintenancePage from "../components/maintenancepage";
 import Home from "../features/Home";
+import AdminSettings from "../features/Settings";
 
 export const routes = createHashRouter([
   {
@@ -46,7 +47,7 @@ export const routes = createHashRouter([
       },
       {
         path: "settings",
-        element: <MaintenancePage />,
+        element: <AdminSettings />,
       },
     ],
   },

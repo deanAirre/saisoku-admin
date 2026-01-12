@@ -21,8 +21,7 @@ export const logoutAdmin = async () => {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 
-  window.location.href = "/admin/login";
-
+  window.location.href = "/";
   return { message: "Logged out successfully" };
 };
 
