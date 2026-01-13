@@ -4,12 +4,14 @@ import LoginPage from "../features/Login";
 import OrderList from "../features/Order";
 import ProtectedRoute from "./ProtectedRoutes";
 import OrderDetail from "../features/OrderDetail";
-import MaintenancePage from "../components/maintenancepage";
+//import MaintenancePage from "../components/maintenancepage";
 import Home from "../features/Home";
 import AdminSettings from "../features/Settings";
 import AdminProductList from "../features/Product";
 import AdminEditProduct from "../features/Product/Edit";
 import AdminCreateProduct from "../features/Product/Create";
+import AdminManagement from "../features/Admin";
+import ProtectedSuperAdminRoute from "./ProtectedRoutes_Super";
 
 export const routes = createHashRouter([
   {
@@ -46,7 +48,13 @@ export const routes = createHashRouter([
       },
       {
         path: "admins",
-        element: <MaintenancePage />,
+        element: (
+          <ProtectedRoute>
+            <ProtectedSuperAdminRoute>
+              <AdminManagement />
+            </ProtectedSuperAdminRoute>
+          </ProtectedRoute>
+        ),
       },
       {
         index: true,
