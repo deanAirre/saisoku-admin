@@ -401,6 +401,7 @@ export default function AdminEditProduct() {
                 {isAddingVariant ? "Add New Variant" : "Edit Variant"}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* SKU */}
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     SKU *
@@ -417,6 +418,8 @@ export default function AdminEditProduct() {
                     className="w-full px-3 py-2 border rounded-lg"
                   />
                 </div>
+
+                {/* Name */}
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Name *
@@ -433,6 +436,77 @@ export default function AdminEditProduct() {
                     className="w-full px-3 py-2 border rounded-lg"
                   />
                 </div>
+
+                {/* Color Name (Optional) */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Color Name
+                  </label>
+                  <input
+                    type="text"
+                    value={variantFormData.color}
+                    onChange={(e) =>
+                      setVariantFormData({
+                        ...variantFormData,
+                        color: e.target.value,
+                      })
+                    }
+                    placeholder="e.g., Purple, Red, Blue"
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
+                {/* Color HEX */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Color HEX
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={variantFormData.color_hex || "#000000"}
+                      onChange={(e) =>
+                        setVariantFormData({
+                          ...variantFormData,
+                          color_hex: e.target.value,
+                        })
+                      }
+                      className="w-12 h-10 border rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={variantFormData.color_hex}
+                      onChange={(e) =>
+                        setVariantFormData({
+                          ...variantFormData,
+                          color_hex: e.target.value,
+                        })
+                      }
+                      placeholder="#000000"
+                      className="flex-1 px-3 py-2 border rounded-lg font-mono"
+                      maxLength={7}
+                    />
+                  </div>
+                </div>
+
+                {/* Size (Optional) */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Size</label>
+                  <input
+                    type="text"
+                    value={variantFormData.size}
+                    onChange={(e) =>
+                      setVariantFormData({
+                        ...variantFormData,
+                        size: e.target.value,
+                      })
+                    }
+                    placeholder="e.g., S, M, L, XL"
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
+                {/* Price */}
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Price *
@@ -449,6 +523,8 @@ export default function AdminEditProduct() {
                     className="w-full px-3 py-2 border rounded-lg"
                   />
                 </div>
+
+                {/* Stock */}
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Stock *
@@ -466,6 +542,7 @@ export default function AdminEditProduct() {
                   />
                 </div>
               </div>
+
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={handleSaveVariant}
@@ -486,7 +563,6 @@ export default function AdminEditProduct() {
               </div>
             </div>
           )}
-
           {/* Variants List */}
           <div className="space-y-3">
             {product.variants.map((variant) => (

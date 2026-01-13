@@ -200,12 +200,12 @@ export default function OrderDetail() {
 
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6 border border-gray-200">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                 Order {order.order_number}
               </h1>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600">
                 Placed on {formatDate(order.created_at)}
               </p>
             </div>
@@ -215,11 +215,12 @@ export default function OrderDetail() {
               onChange={(e) =>
                 handleStatusChange(e.target.value as OrderStatus)
               }
-              disabled={actionLoading || paymentProof?.status === "pending"} // Disable if payment proof is pending
-              className={`px-4 py-2 rounded-lg border-2 font-semibold text-sm cursor-pointer transition ${
+              disabled={actionLoading || paymentProof?.status === "pending"}
+              className={`w-full sm:w-auto px-4 py-2 rounded-lg border-2 font-semibold text-sm cursor-pointer transition ${
                 STATUS_COLORS[order.status]
               } ${paymentProof?.status === "pending" ? "opacity-50 cursor-not-allowed" : ""}`}
             >
+              {" "}
               {ORDER_STATUSES.map((status) => (
                 <option key={status} value={status}>
                   {status.replace(/_/g, " ").toUpperCase()}
