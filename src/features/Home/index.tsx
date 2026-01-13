@@ -3,6 +3,7 @@ import { useAdmin } from "../../context/admin-context";
 import { Clock, Package, ShoppingBag } from "lucide-react";
 import { getOrderStats } from "../../services/order/api";
 import { useNavigate } from "react-router-dom";
+import productAdminApi from "../../services/products/api";
 
 function Home() {
   const { admin } = useAdmin();
@@ -15,16 +16,28 @@ function Home() {
     delivered: 0,
     cancelled: 0,
   });
+
+  const [productStats, setProductStats] = useState({
+    total_products: 0,
+    low_stock_count: 0,
+    out_of_stock_count: 0,
+    total_variants: 0,
+  });
+
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = await getOrderStats();
-        setStats(data);
+        const [orderData, productData] = await Promise.all([
+          getOrderStats(),
+          productAdminApi.getProductStats(),
+        ]);
+        setStats(orderData);
+        setProductStats(productData);
       } catch (error) {
-        console.error("Failed to fetch order stats:", error);
+        console.error("Failed to fetch stats:", error);
       } finally {
         setLoading(false);
       }
@@ -144,14 +157,56 @@ function Home() {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Products</h2>
+              <p className="text-sm text-gray-600">Inventory overview</p>
             </div>
           </div>
-          <div className="text-4xl font-bold text-gray-900 mb-2">-</div>
-          <p className="text-sm text-gray-600">Coming soon</p>
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-xs text-gray-500">
-              Product management will be available here
-            </p>
+
+          <div className="mb-4">
+            <div className="text-4xl font-bold text-gray-900 mb-1">
+              {productStats.total_products}
+            </div>
+            <p className="text-sm text-gray-600">Total Products</p>
+          </div>
+
+          {/* Product Stats Breakdown */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-[#1434A4] rounded-lg">
+              <span className="text-sm text-[#FEFCFF]">Total Variants</span>
+              <span className="text-lg font-bold text-[#FEFCFF]">
+                {productStats.total_variants}
+              </span>
+            </div>
+
+            {productStats.low_stock_count > 0 && (
+              <div className="flex items-center justify-between p-3 bg-[#EE4B2B] rounded-lg border border-orange-200">
+                <span className="text-sm text-[#FEFCFF] font-medium">
+                  Low Stock (&lt;10)
+                </span>
+                <span className="text-lg font-bold text-[#FEFCFF]">
+                  {productStats.low_stock_count}
+                </span>
+              </div>
+            )}
+
+            {productStats.out_of_stock_count > 0 && (
+              <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                <span className="text-sm text-red-700 font-medium">
+                  Out of Stock
+                </span>
+                <span className="text-lg font-bold text-red-600">
+                  {productStats.out_of_stock_count}
+                </span>
+              </div>
+            )}
+
+            {productStats.low_stock_count === 0 &&
+              productStats.out_of_stock_count === 0 && (
+                <div className="flex items-center justify-center p-3 bg-green-50 rounded-lg border border-green-200">
+                  <span className="text-sm text-green-700 font-medium">
+                    ✓ All products in stock
+                  </span>
+                </div>
+              )}
           </div>
         </div>
 
@@ -162,7 +217,7 @@ function Home() {
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-              <Clock className="text-white" size={24} />
+              <Clock className="text-[#0ABAB5]" size={24} />
             </div>
             <div>
               <h2 className="text-lg font-semibold">Last Login</h2>

@@ -398,6 +398,36 @@ export const productAdminApi = {
 
     return data || [];
   },
+
+  async getProductStats(): Promise<{
+    total_products: number;
+    low_stock_count: number;
+    out_of_stock_count: number;
+    total_variants: number;
+  }> {
+    // Get all variants with product info
+    const { data: variants, error } = await supabase
+      .from("variants")
+      .select("stock, product_id")
+      .eq("is_active", true);
+
+    if (error) throw error;
+
+    // Get unique products count
+    const uniqueProducts = new Set(variants?.map((v) => v.product_id) || []);
+
+    // Count low stock and out of stock
+    const lowStock =
+      variants?.filter((v) => v.stock > 0 && v.stock < 10).length || 0;
+    const outOfStock = variants?.filter((v) => v.stock === 0).length || 0;
+
+    return {
+      total_products: uniqueProducts.size,
+      low_stock_count: lowStock,
+      out_of_stock_count: outOfStock,
+      total_variants: variants?.length || 0,
+    };
+  },
 };
 
 export default productAdminApi;

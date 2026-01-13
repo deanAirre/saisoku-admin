@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { Users, Plus, Shield, Clock, Loader2, Trash2 } from "lucide-react";
+import {
+  Users,
+  ShieldPlus,
+  Shield,
+  Clock,
+  Loader2,
+  Trash2,
+  Plus,
+} from "lucide-react";
 import type { AdminProfile } from "../../services/user/admin/type";
 import {
   deleteAdmin,
@@ -175,7 +183,7 @@ export default function AdminManagement() {
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
-                  <Plus size={20} />
+                  <ShieldPlus size={20} />
                   <span className="font-medium">Add Admin</span>
                 </button>
               </nav>
