@@ -15,6 +15,7 @@ export interface Order {
   postcode: string;
   created_at: string;
   updated_at: string;
+  order_notes?: string;
 }
 
 export type OrderStatus =

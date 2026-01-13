@@ -209,25 +209,29 @@ function Home() {
               )}
           </div>
         </div>
-
         {/* Last Login Card */}
         <button
           onClick={() => navigate("/admin/admins")}
-          className="bg-[#0ABAB5] rounded-xl shadow-sm p-6 text-white hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer text-left w-full"
+          className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer text-left w-full"
         >
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-              <Clock className="text-[#0ABAB5]" size={24} />
+            <div className="w-12 h-12 bg-[#0ABAB5] bg-opacity-10 rounded-lg flex items-center justify-center">
+              <Clock className="text-[#FFFFFF]" size={24} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">Last Login</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Last Login
+              </h2>
+              <p className="text-sm text-gray-600">Admin account details</p>
             </div>
           </div>
           <div className="space-y-3">
             <div>
-              <p className="text-sm opacity-90">Admin</p>
+              <p className="text-sm text-gray-600">Admin</p>
               <div className="flex items-center gap-2">
-                <p className="text-lg font-semibold">{admin?.name || "N/A"}</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {admin?.name || "N/A"}
+                </p>
                 {admin?.role === "super_admin" && (
                   <span className="px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs rounded-full font-semibold">
                     SUPER
@@ -236,30 +240,32 @@ function Home() {
               </div>
             </div>
             <div>
-              <p className="text-sm opacity-90">Email</p>
-              <p className="text-sm font-medium">{admin?.email || "N/A"}</p>
+              <p className="text-sm text-gray-600">Email</p>
+              <p className="text-sm font-medium text-gray-900">
+                {admin?.email || "N/A"}
+              </p>
             </div>
             <div>
-              <p className="text-sm opacity-90">Last Login</p>
-              <p className="text-sm font-medium">
+              <p className="text-sm text-gray-600">Last Login</p>
+              <p className="text-sm font-medium text-gray-900">
                 {admin?.lastLogin
                   ? formatDate(admin.lastLogin)
                   : "Never logged in"}
               </p>
             </div>
-            <div className="pt-3 border-t border-white border-opacity-20">
-              <p className="text-xs opacity-75">Account created</p>
-              <p className="text-sm font-medium">
+            <div className="pt-3 border-t border-gray-200">
+              <p className="text-xs text-gray-500">Account created</p>
+              <p className="text-sm font-medium text-gray-900">
                 {admin?.createdAt ? formatDate(admin.createdAt) : "N/A"}
               </p>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-white border-opacity-20">
-            <p className="text-xs opacity-75 text-center">
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <p className="text-xs text-gray-500 text-center">
               Click to manage admin accounts →
             </p>
           </div>
-        </button>
+        </button>{" "}
       </div>
     </div>
   );

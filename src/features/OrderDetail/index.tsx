@@ -1,7 +1,14 @@
 // ========== src/pages/admin/orders/OrderDetailPage.tsx ==========
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Package, MapPin, CheckCircle, XCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Package,
+  MapPin,
+  CheckCircle,
+  XCircle,
+  MessageSquare,
+} from "lucide-react";
 import {
   fetchOrderByIdAdmin,
   getPaymentProofAdmin,
@@ -418,6 +425,20 @@ export default function OrderDetail() {
                       </p>
                     </div>
                   )}
+                </div>
+              )}
+              {/* Customer Order Notes */}
+              {order.order_notes && (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <MessageSquare className="text-[#0ABAB5]" size={24} />
+                    <h2 className="text-lg font-semibold">Customer Notes</h2>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-sm text-gray-800 whitespace-pre-wrap">
+                      {order.order_notes}
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
