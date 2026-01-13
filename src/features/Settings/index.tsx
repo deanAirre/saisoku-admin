@@ -8,6 +8,8 @@ import {
   X,
   Loader2,
   Star,
+  Tag,
+  Package,
 } from "lucide-react";
 import {
   getAllStoreLocations,
@@ -20,37 +22,64 @@ import type {
   StoreLocation,
   CreateStoreLocationRequest,
 } from "../../services/location/type";
+import { categoryApi } from "../../services/categories";
+import type {
+  CategoryWithCount,
+  DisplayMode,
+} from "../../services/categories/type";
 
-type SettingsTab = "location" | "payment" | "shipping" | "general";
+type SettingsTab = "categories" | "location";
 
 export default function AdminSettings() {
-  const [activeTab, setActiveTab] = useState<SettingsTab>("location");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("categories");
+
+  // Location state
   const [locations, setLocations] = useState<StoreLocation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [isAddingNew, setIsAddingNew] = useState(false);
-  const [formData, setFormData] = useState<Partial<CreateStoreLocationRequest>>(
-    {
-      name: "",
-      address: "",
-      city: "",
-      region: "",
-      district: "",
-      postcode: "",
-      phone: "",
-      email: "",
-      maps_url: "",
-      is_active: true,
-    },
+  const [locationLoading, setLocationLoading] = useState(true);
+  const [locationSaving, setLocationSaving] = useState(false);
+  const [editingLocationId, setEditingLocationId] = useState<string | null>(
+    null,
   );
+  const [isAddingNewLocation, setIsAddingNewLocation] = useState(false);
+  const [locationFormData, setLocationFormData] = useState<
+    Partial<CreateStoreLocationRequest>
+  >({
+    name: "",
+    address: "",
+    city: "",
+    region: "",
+    district: "",
+    postcode: "",
+    phone: "",
+    email: "",
+    maps_url: "",
+    is_active: true,
+  });
+
+  // Category state
+  const [categories, setCategories] = useState<CategoryWithCount[]>([]);
+  const [categoryLoading, setCategoryLoading] = useState(true);
+  const [categorySaving, setCategorySaving] = useState(false);
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
+    null,
+  );
+  const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
+  const [categoryFormData, setCategoryFormData] = useState<{
+    name: string;
+    default_display_mode: DisplayMode;
+  }>({
+    name: "",
+    default_display_mode: "individual",
+  });
 
   useEffect(() => {
     loadLocations();
+    loadCategories();
   }, []);
 
+  // ========== LOCATION FUNCTIONS ==========
   const loadLocations = async () => {
-    setLoading(true);
+    setLocationLoading(true);
     try {
       const data = await getAllStoreLocations();
       setLocations(data);
@@ -58,13 +87,13 @@ export default function AdminSettings() {
       console.error("Failed to load locations:", error);
       alert("Failed to load locations");
     } finally {
-      setLoading(false);
+      setLocationLoading(false);
     }
   };
 
-  const handleEdit = (location: StoreLocation) => {
-    setEditingId(location.id);
-    setFormData({
+  const handleEditLocation = (location: StoreLocation) => {
+    setEditingLocationId(location.id);
+    setLocationFormData({
       name: location.name,
       address: location.address,
       city: location.city,
@@ -76,13 +105,13 @@ export default function AdminSettings() {
       maps_url: location.maps_url || "",
       is_active: location.is_active,
     });
-    setIsAddingNew(false);
+    setIsAddingNewLocation(false);
   };
 
-  const handleAddNew = () => {
-    setIsAddingNew(true);
-    setEditingId(null);
-    setFormData({
+  const handleAddNewLocation = () => {
+    setIsAddingNewLocation(true);
+    setEditingLocationId(null);
+    setLocationFormData({
       name: "",
       address: "",
       city: "",
@@ -96,10 +125,10 @@ export default function AdminSettings() {
     });
   };
 
-  const handleCancel = () => {
-    setEditingId(null);
-    setIsAddingNew(false);
-    setFormData({
+  const handleCancelLocation = () => {
+    setEditingLocationId(null);
+    setIsAddingNewLocation(false);
+    setLocationFormData({
       name: "",
       address: "",
       city: "",
@@ -113,38 +142,40 @@ export default function AdminSettings() {
     });
   };
 
-  const handleSave = async () => {
+  const handleSaveLocation = async () => {
     if (
-      !formData.name ||
-      !formData.address ||
-      !formData.city ||
-      !formData.phone
+      !locationFormData.name ||
+      !locationFormData.address ||
+      !locationFormData.city ||
+      !locationFormData.phone
     ) {
       alert("Please fill in all required fields (Name, Address, City, Phone)");
       return;
     }
 
-    setSaving(true);
+    setLocationSaving(true);
     try {
-      if (isAddingNew) {
-        await createStoreLocation(formData as CreateStoreLocationRequest);
+      if (isAddingNewLocation) {
+        await createStoreLocation(
+          locationFormData as CreateStoreLocationRequest,
+        );
         alert("Location added successfully!");
-      } else if (editingId) {
-        await updateStoreLocation(editingId, formData);
+      } else if (editingLocationId) {
+        await updateStoreLocation(editingLocationId, locationFormData);
         alert("Location updated successfully!");
       }
 
-      handleCancel();
+      handleCancelLocation();
       await loadLocations();
     } catch (error: any) {
       console.error("Failed to save location:", error);
       alert(error.message || "Failed to save location");
     } finally {
-      setSaving(false);
+      setLocationSaving(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDeleteLocation = async (id: string) => {
     if (!confirm("Are you sure you want to delete this location?")) return;
 
     try {
@@ -157,7 +188,7 @@ export default function AdminSettings() {
     }
   };
 
-  const handleSetDefault = async (id: string) => {
+  const handleSetDefaultLocation = async (id: string) => {
     try {
       await setDefaultStoreLocation(id);
       alert("Default location updated!");
@@ -168,7 +199,100 @@ export default function AdminSettings() {
     }
   };
 
-  if (loading) {
+  // ========== CATEGORY FUNCTIONS ==========
+  const loadCategories = async () => {
+    setCategoryLoading(true);
+    try {
+      const data = await categoryApi.getCategoriesWithCount();
+      setCategories(data);
+    } catch (error) {
+      console.error("Failed to load categories:", error);
+      alert("Failed to load categories");
+    } finally {
+      setCategoryLoading(false);
+    }
+  };
+
+  const handleEditCategory = (category: CategoryWithCount) => {
+    setEditingCategoryId(category.id);
+    setCategoryFormData({
+      name: category.name,
+      default_display_mode: category.default_display_mode,
+    });
+    setIsAddingNewCategory(false);
+  };
+
+  const handleAddNewCategory = () => {
+    setIsAddingNewCategory(true);
+    setEditingCategoryId(null);
+    setCategoryFormData({
+      name: "",
+      default_display_mode: "individual",
+    });
+  };
+
+  const handleCancelCategory = () => {
+    setEditingCategoryId(null);
+    setIsAddingNewCategory(false);
+    setCategoryFormData({
+      name: "",
+      default_display_mode: "individual",
+    });
+  };
+
+  const handleSaveCategory = async () => {
+    if (!categoryFormData.name.trim()) {
+      alert("Please enter a category name");
+      return;
+    }
+
+    setCategorySaving(true);
+    try {
+      if (isAddingNewCategory) {
+        await categoryApi.createCategory({
+          name: categoryFormData.name.trim(),
+          default_display_mode: categoryFormData.default_display_mode,
+        });
+        alert("Category added successfully!");
+      } else if (editingCategoryId) {
+        await categoryApi.updateCategory(editingCategoryId, {
+          name: categoryFormData.name.trim(),
+          default_display_mode: categoryFormData.default_display_mode,
+        });
+        alert("Category updated successfully!");
+      }
+
+      handleCancelCategory();
+      await loadCategories();
+    } catch (error: any) {
+      console.error("Failed to save category:", error);
+      alert(error.message || "Failed to save category");
+    } finally {
+      setCategorySaving(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id: string, productCount: number) => {
+    if (productCount > 0) {
+      alert(
+        `Cannot delete this category. It has ${productCount} product(s) assigned to it.`,
+      );
+      return;
+    }
+
+    if (!confirm("Are you sure you want to delete this category?")) return;
+
+    try {
+      await categoryApi.deleteCategory(id);
+      alert("Category deleted successfully!");
+      await loadCategories();
+    } catch (error: any) {
+      console.error("Failed to delete category:", error);
+      alert(error.message || "Failed to delete category");
+    }
+  };
+
+  if (locationLoading && activeTab === "location") {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="w-12 h-12 text-[#0ABAB5] animate-spin" />
@@ -185,9 +309,21 @@ export default function AdminSettings() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-4">
               <nav className="space-y-1">
+                <button
+                  onClick={() => setActiveTab("categories")}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                    activeTab === "categories"
+                      ? "bg-[#0ABAB5] text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <Tag size={20} />
+                  <span className="font-medium">Categories</span>
+                </button>
                 <button
                   onClick={() => setActiveTab("location")}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
@@ -197,13 +333,199 @@ export default function AdminSettings() {
                   }`}
                 >
                   <MapPin size={20} />
-                  <span className="font-medium">Location</span>
+                  <span className="font-medium">Store Location</span>
                 </button>
               </nav>
             </div>
           </div>
 
+          {/* Main Content */}
           <div className="lg:col-span-3">
+            {/* CATEGORIES TAB */}
+            {activeTab === "categories" && (
+              <div className="bg-white rounded-lg shadow-sm">
+                <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      Product Categories
+                    </h2>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Manage product categories and their default display modes.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleAddNewCategory}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#0ABAB5] text-white rounded-lg hover:bg-[#099490] transition"
+                  >
+                    <Plus size={20} />
+                    <span className="hidden sm:inline">Add Category</span>
+                  </button>
+                </div>
+
+                {/* Add/Edit Form */}
+                {(isAddingNewCategory || editingCategoryId) && (
+                  <div className="p-6 bg-blue-50 border-b border-blue-200">
+                    <h3 className="text-lg font-semibold mb-4">
+                      {isAddingNewCategory
+                        ? "Add New Category"
+                        : "Edit Category"}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Category Name *
+                        </label>
+                        <input
+                          type="text"
+                          value={categoryFormData.name}
+                          onChange={(e) =>
+                            setCategoryFormData({
+                              ...categoryFormData,
+                              name: e.target.value,
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0ABAB5]"
+                          placeholder="e.g., Tas, Boneka, Gelang"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Default Display Mode *
+                        </label>
+                        <select
+                          value={categoryFormData.default_display_mode}
+                          onChange={(e) =>
+                            setCategoryFormData({
+                              ...categoryFormData,
+                              default_display_mode: e.target
+                                .value as DisplayMode,
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0ABAB5] bg-white"
+                        >
+                          <option value="individual">
+                            Individual (Each variant shown separately)
+                          </option>
+                          <option value="grouped">
+                            Grouped (Variants grouped by product)
+                          </option>
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">
+                          This sets the default display mode for products in
+                          this category.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 mt-6">
+                      <button
+                        onClick={handleSaveCategory}
+                        disabled={categorySaving}
+                        className="flex items-center gap-2 px-6 py-2 bg-[#0ABAB5] text-white rounded-lg hover:bg-[#099490] transition disabled:opacity-50"
+                      >
+                        {categorySaving ? (
+                          <Loader2 size={20} className="animate-spin" />
+                        ) : (
+                          <Save size={20} />
+                        )}
+                        Save Category
+                      </button>
+                      <button
+                        onClick={handleCancelCategory}
+                        disabled={categorySaving}
+                        className="flex items-center gap-2 px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                      >
+                        <X size={20} />
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Categories List */}
+                <div className="p-6">
+                  {categoryLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 text-[#0ABAB5] animate-spin" />
+                    </div>
+                  ) : categories.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Tag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-600">No categories added yet</p>
+                      <button
+                        onClick={handleAddNewCategory}
+                        className="mt-4 px-6 py-2 bg-[#0ABAB5] text-white rounded-lg hover:bg-[#099490] transition"
+                      >
+                        Add Your First Category
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {categories.map((category) => (
+                        <div
+                          key={category.id}
+                          className="border border-gray-200 rounded-lg p-4"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                  {category.name}
+                                </h3>
+                                <span
+                                  className={`px-2 py-1 text-xs rounded-full ${
+                                    category.default_display_mode === "grouped"
+                                      ? "bg-blue-100 text-blue-700"
+                                      : "bg-gray-100 text-gray-700"
+                                  }`}
+                                >
+                                  {category.default_display_mode === "grouped"
+                                    ? "Grouped"
+                                    : "Individual"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <Package size={16} />
+                                <span>{category.product_count} product(s)</span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2 ml-4">
+                              <button
+                                onClick={() => handleEditCategory(category)}
+                                className="p-2 text-[#0ABAB5] hover:bg-teal-50 rounded-lg transition"
+                                title="Edit category"
+                              >
+                                <Edit2 size={20} />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleDeleteCategory(
+                                    category.id,
+                                    category.product_count,
+                                  )
+                                }
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={category.product_count > 0}
+                                title={
+                                  category.product_count > 0
+                                    ? "Cannot delete category with products"
+                                    : "Delete category"
+                                }
+                              >
+                                <Trash2 size={20} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* LOCATION TAB */}
             {activeTab === "location" && (
               <div className="bg-white rounded-lg shadow-sm">
                 <div className="p-6 border-b border-gray-200 flex items-center justify-between">
@@ -217,7 +539,7 @@ export default function AdminSettings() {
                     </p>
                   </div>
                   <button
-                    onClick={handleAddNew}
+                    onClick={handleAddNewLocation}
                     className="flex items-center gap-2 px-4 py-2 bg-[#0ABAB5] text-white rounded-lg hover:bg-[#099490] transition"
                   >
                     <Plus size={20} />
@@ -225,10 +547,12 @@ export default function AdminSettings() {
                   </button>
                 </div>
 
-                {(isAddingNew || editingId) && (
+                {(isAddingNewLocation || editingLocationId) && (
                   <div className="p-6 bg-blue-50 border-b border-blue-200">
                     <h3 className="text-lg font-semibold mb-4">
-                      {isAddingNew ? "Add New Location" : "Edit Location"}
+                      {isAddingNewLocation
+                        ? "Add New Location"
+                        : "Edit Location"}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -237,9 +561,12 @@ export default function AdminSettings() {
                         </label>
                         <input
                           type="text"
-                          value={formData.name || ""}
+                          value={locationFormData.name || ""}
                           onChange={(e) =>
-                            setFormData({ ...formData, name: e.target.value })
+                            setLocationFormData({
+                              ...locationFormData,
+                              name: e.target.value,
+                            })
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0ABAB5]"
                           placeholder="Main Store"
@@ -252,9 +579,12 @@ export default function AdminSettings() {
                         </label>
                         <input
                           type="tel"
-                          value={formData.phone || ""}
+                          value={locationFormData.phone || ""}
                           onChange={(e) =>
-                            setFormData({ ...formData, phone: e.target.value })
+                            setLocationFormData({
+                              ...locationFormData,
+                              phone: e.target.value,
+                            })
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0ABAB5]"
                           placeholder="+628123456789"
@@ -267,9 +597,12 @@ export default function AdminSettings() {
                         </label>
                         <input
                           type="email"
-                          value={formData.email || ""}
+                          value={locationFormData.email || ""}
                           onChange={(e) =>
-                            setFormData({ ...formData, email: e.target.value })
+                            setLocationFormData({
+                              ...locationFormData,
+                              email: e.target.value,
+                            })
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0ABAB5]"
                           placeholder="store@example.com"
@@ -282,9 +615,12 @@ export default function AdminSettings() {
                         </label>
                         <input
                           type="text"
-                          value={formData.city || ""}
+                          value={locationFormData.city || ""}
                           onChange={(e) =>
-                            setFormData({ ...formData, city: e.target.value })
+                            setLocationFormData({
+                              ...locationFormData,
+                              city: e.target.value,
+                            })
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0ABAB5]"
                           placeholder="Jakarta"
@@ -297,9 +633,12 @@ export default function AdminSettings() {
                         </label>
                         <input
                           type="text"
-                          value={formData.region || ""}
+                          value={locationFormData.region || ""}
                           onChange={(e) =>
-                            setFormData({ ...formData, region: e.target.value })
+                            setLocationFormData({
+                              ...locationFormData,
+                              region: e.target.value,
+                            })
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0ABAB5]"
                           placeholder="DKI Jakarta"
@@ -312,10 +651,10 @@ export default function AdminSettings() {
                         </label>
                         <input
                           type="text"
-                          value={formData.district || ""}
+                          value={locationFormData.district || ""}
                           onChange={(e) =>
-                            setFormData({
-                              ...formData,
+                            setLocationFormData({
+                              ...locationFormData,
                               district: e.target.value,
                             })
                           }
@@ -330,10 +669,10 @@ export default function AdminSettings() {
                         </label>
                         <input
                           type="text"
-                          value={formData.postcode || ""}
+                          value={locationFormData.postcode || ""}
                           onChange={(e) =>
-                            setFormData({
-                              ...formData,
+                            setLocationFormData({
+                              ...locationFormData,
                               postcode: e.target.value,
                             })
                           }
@@ -348,10 +687,10 @@ export default function AdminSettings() {
                         </label>
                         <input
                           type="url"
-                          value={formData.maps_url || ""}
+                          value={locationFormData.maps_url || ""}
                           onChange={(e) =>
-                            setFormData({
-                              ...formData,
+                            setLocationFormData({
+                              ...locationFormData,
                               maps_url: e.target.value,
                             })
                           }
@@ -365,10 +704,10 @@ export default function AdminSettings() {
                           Address *
                         </label>
                         <textarea
-                          value={formData.address || ""}
+                          value={locationFormData.address || ""}
                           onChange={(e) =>
-                            setFormData({
-                              ...formData,
+                            setLocationFormData({
+                              ...locationFormData,
                               address: e.target.value,
                             })
                           }
@@ -381,11 +720,11 @@ export default function AdminSettings() {
 
                     <div className="flex gap-3 mt-6">
                       <button
-                        onClick={handleSave}
-                        disabled={saving}
+                        onClick={handleSaveLocation}
+                        disabled={locationSaving}
                         className="flex items-center gap-2 px-6 py-2 bg-[#0ABAB5] text-white rounded-lg hover:bg-[#099490] transition disabled:opacity-50"
                       >
-                        {saving ? (
+                        {locationSaving ? (
                           <Loader2 size={20} className="animate-spin" />
                         ) : (
                           <Save size={20} />
@@ -393,8 +732,8 @@ export default function AdminSettings() {
                         Save Changes
                       </button>
                       <button
-                        onClick={handleCancel}
-                        disabled={saving}
+                        onClick={handleCancelLocation}
+                        disabled={locationSaving}
                         className="flex items-center gap-2 px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
                       >
                         <X size={20} />
@@ -410,7 +749,7 @@ export default function AdminSettings() {
                       <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                       <p className="text-gray-600">No locations added yet</p>
                       <button
-                        onClick={handleAddNew}
+                        onClick={handleAddNewLocation}
                         className="mt-4 px-6 py-2 bg-[#0ABAB5] text-white rounded-lg hover:bg-[#099490] transition"
                       >
                         Add Your First Location
@@ -450,48 +789,34 @@ export default function AdminSettings() {
                                   {location.city}
                                 </div>
                                 <div>
-                                  <span className="font-medium">District:</span>{" "}
-                                  {location.district || "-"}
-                                </div>
-                                <div>
                                   <span className="font-medium">Phone:</span>{" "}
                                   {location.phone}
-                                </div>
-                                <div>
-                                  <span className="font-medium">Email:</span>{" "}
-                                  {location.email || "-"}
-                                </div>
-                                <div>
-                                  <span className="font-medium">Postcode:</span>{" "}
-                                  {location.postcode || "-"}
                                 </div>
                               </div>
                             </div>
                             <div className="flex gap-2 ml-4">
                               {!location.is_default && (
                                 <button
-                                  onClick={() => handleSetDefault(location.id)}
+                                  onClick={() =>
+                                    handleSetDefaultLocation(location.id)
+                                  }
                                   className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition"
-                                  title="Set as default"
                                 >
                                   <Star size={20} />
                                 </button>
                               )}
                               <button
-                                onClick={() => handleEdit(location)}
+                                onClick={() => handleEditLocation(location)}
                                 className="p-2 text-[#0ABAB5] hover:bg-teal-50 rounded-lg transition"
                               >
                                 <Edit2 size={20} />
                               </button>
                               <button
-                                onClick={() => handleDelete(location.id)}
-                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled={location.is_default}
-                                title={
-                                  location.is_default
-                                    ? "Cannot delete default location"
-                                    : "Delete"
+                                onClick={() =>
+                                  handleDeleteLocation(location.id)
                                 }
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition disabled:opacity-50"
+                                disabled={location.is_default}
                               >
                                 <Trash2 size={20} />
                               </button>
@@ -502,14 +827,6 @@ export default function AdminSettings() {
                     </div>
                   )}
                 </div>
-              </div>
-            )}
-
-            {activeTab !== "location" && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <p className="text-gray-600">
-                  TODO: Implement {activeTab} settings
-                </p>
               </div>
             )}
           </div>
