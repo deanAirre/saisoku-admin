@@ -11,7 +11,6 @@ import AdminProductList from "../features/Product";
 import AdminEditProduct from "../features/Product/Edit";
 import AdminCreateProduct from "../features/Product/Create";
 import AdminManagement from "../features/Admin";
-import ProtectedSuperAdminRoute from "./ProtectedRoutes_Super";
 
 export const routes = createHashRouter([
   {
@@ -49,10 +48,8 @@ export const routes = createHashRouter([
       {
         path: "admins",
         element: (
-          <ProtectedRoute>
-            <ProtectedSuperAdminRoute>
-              <AdminManagement />
-            </ProtectedSuperAdminRoute>
+          <ProtectedRoute requireSuperAdmin={true}>
+            <AdminManagement />
           </ProtectedRoute>
         ),
       },
