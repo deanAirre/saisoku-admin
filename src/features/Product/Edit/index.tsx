@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Save,
@@ -52,6 +52,8 @@ export default function AdminEditProduct() {
     is_featured: false,
     is_active: true,
   });
+
+  const variantFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadData();
@@ -114,6 +116,13 @@ export default function AdminEditProduct() {
       price: 0,
       stock: 0,
     });
+
+    setTimeout(() => {
+      variantFormRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 100);
   };
 
   const handleEditVariant = (variant: Variant) => {
@@ -129,6 +138,13 @@ export default function AdminEditProduct() {
       price: variant.price,
       stock: variant.stock,
     });
+
+    setTimeout(() => {
+      variantFormRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 100);
   };
 
   const handleSaveVariant = async () => {
@@ -400,7 +416,10 @@ export default function AdminEditProduct() {
 
           {/* Variant Form */}
           {(isAddingVariant || editingVariantId) && (
-            <div className="bg-blue-50 rounded-lg p-4 mb-4">
+            <div
+              ref={variantFormRef}
+              className="bg-blue-50 rounded-lg p-4 mb-4"
+            >
               <h3 className="font-semibold mb-3">
                 {isAddingVariant ? "Add New Variant" : "Edit Variant"}
               </h3>

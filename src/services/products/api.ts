@@ -135,6 +135,7 @@ export const productAdminApi = {
       .insert({
         product_id: request.product_id,
         sku: request.sku,
+        slug: request.slug, // ⭐ ADD THIS LINE
         variant_name: request.variant_name,
         size: request.size,
         color: request.color,
@@ -163,6 +164,7 @@ export const productAdminApi = {
     const updateData: any = {};
 
     if (request.sku !== undefined) updateData.sku = request.sku;
+    if (request.slug !== undefined) updateData.slug = request.slug; // ⭐ ADD THIS LINE
     if (request.variant_name !== undefined)
       updateData.variant_name = request.variant_name;
     if (request.size !== undefined) updateData.size = request.size;
