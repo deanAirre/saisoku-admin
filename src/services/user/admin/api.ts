@@ -13,12 +13,12 @@ export const loginAdmin = async (credentials: AdminLoginRequest) => {
 
   if (error) throw error;
 
-  // Update last_login timestamp
+  // ⭐ Update last_login timestamp
   if (data.user) {
     await supabase
       .from("admins")
       .update({ last_login: new Date().toISOString() })
-      .eq("id", data.user.id);
+      .eq("user_id", data.user.id);
   }
 
   return { user: data.user, session: data.session };

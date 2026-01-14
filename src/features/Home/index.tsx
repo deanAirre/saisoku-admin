@@ -83,7 +83,6 @@ function Home() {
           Here's what's happening with your store today.
         </p>
       </div>
-
       {/* First Row - Orders Overview (Full Width) */}
       <div className="mb-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-6 hover:shadow-md transition-shadow">
@@ -147,11 +146,10 @@ function Home() {
           </div>
         </div>
       </div>
-
       {/* Second Row - Products and Last Login (Equal Height) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Products Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-6 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-6 hover:shadow-md transition-shadow flex flex-col">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-[#0ABAB5] rounded-lg flex items-center justify-center">
               <Package className="text-[#FFFFFF]" size={24} />
@@ -170,43 +168,20 @@ function Home() {
           </div>
 
           {/* Product Stats Breakdown */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-[#1434A4] rounded-lg">
-              <span className="text-sm text-[#FEFCFF]">Total Variants</span>
-              <span className="text-lg font-bold text-[#FEFCFF]">
+          <div className="space-y-3 flex-1">
+            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <span className="text-sm text-blue-700">Total Variants</span>
+              <span className="text-lg font-bold text-blue-700">
                 {productStats.total_variants}
               </span>
             </div>
 
-            {productStats.by_category.length > 0 && (
-              <div className="border-t border-gray-200 pt-3">
-                <p className="text-xs text-gray-600 font-medium mb-2">
-                  By Category
-                </p>
-                <div className="space-y-2">
-                  {productStats.by_category.map((cat) => (
-                    <div
-                      key={cat.category_name}
-                      className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
-                    >
-                      <span className="text-sm text-gray-700">
-                        {cat.category_name}
-                      </span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {cat.product_count}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {productStats.low_stock_count > 0 && (
-              <div className="flex items-center justify-between p-3 bg-[#EE4B2B] rounded-lg border border-orange-200">
-                <span className="text-sm text-[#FEFCFF] font-medium">
+              <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
+                <span className="text-sm text-orange-700 font-medium">
                   Low Stock (&lt;10)
                 </span>
-                <span className="text-lg font-bold text-[#FEFCFF]">
+                <span className="text-lg font-bold text-orange-700">
                   {productStats.low_stock_count}
                 </span>
               </div>
@@ -227,16 +202,40 @@ function Home() {
               productStats.out_of_stock_count === 0 && (
                 <div className="flex items-center justify-center p-3 bg-green-50 rounded-lg border border-green-200">
                   <span className="text-sm text-green-700 font-medium">
-                    ✓ All products in stock
+                    All products in stock
                   </span>
                 </div>
               )}
+
+            {productStats.by_category.length > 0 && (
+              <div className="border-t border-gray-200 pt-3">
+                <p className="text-xs text-gray-600 font-medium mb-2">
+                  By Category
+                </p>
+                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                  {productStats.by_category.map((cat) => (
+                    <div
+                      key={cat.category_name}
+                      className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                    >
+                      <span className="text-sm text-gray-700">
+                        {cat.category_name}
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {cat.product_count}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
+
         {/* Last Login Card */}
         <button
           onClick={() => navigate("/admin/admins")}
-          className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer text-left w-full"
+          className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer text-left w-full flex flex-col"
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-[#0ABAB5] bg-opacity-10 rounded-lg flex items-center justify-center">
@@ -249,7 +248,7 @@ function Home() {
               <p className="text-sm text-gray-600">Admin account details</p>
             </div>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-3 flex-1">
             <div>
               <p className="text-sm text-gray-600">Admin</p>
               <div className="flex items-center gap-2">
@@ -286,10 +285,10 @@ function Home() {
           </div>
           <div className="mt-4 pt-4 border-t border-gray-200">
             <p className="text-xs text-gray-500 text-center">
-              Click to manage admin accounts →
+              Click to manage admin accounts
             </p>
           </div>
-        </button>{" "}
+        </button>
       </div>
     </div>
   );
