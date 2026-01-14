@@ -4,6 +4,7 @@ import backgroundImg from "../../assets/saisoku-wall_2.jpg";
 import { Eye, EyeOff } from "lucide-react";
 import { useAdmin } from "../../context/admin-context";
 import { loginAdmin } from "../../services/user/admin/api";
+import { useToast } from "../../context/toast-context";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { refetchAdmin } = useAdmin();
+  const { showToast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,15 +29,18 @@ const LoginPage = () => {
       console.log("Fetching admin profile");
       await refetchAdmin();
       console.log("Admin profile loaded, redirecting...");
+      showToast({ message: "Login successful!", type: "success" });
 
-      // Redirect to admin dashboard
+      // Redirect to admin dashboard console.log("Admin login successful");
+      console.log("Fetching admin profile");
       navigate("/admin", { replace: true });
     } catch (err: any) {
       console.error("Admin login error:", err);
-      setError(
-        err.message ||
-          "Login failed. Please check your credentials or contact support.",
-      );
+      showToast({
+        message: err.message || "Login failed. Please check your credentials.",
+        type: "error",
+        duration: 5000,
+      });
     } finally {
       setLoading(false);
     }

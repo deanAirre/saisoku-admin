@@ -407,6 +407,7 @@ export const productAdminApi = {
     low_stock_count: number;
     out_of_stock_count: number;
     total_variants: number;
+    by_category: Array<{ category_name: string; product_count: number }>; // ⭐ Add this
   }> {
     // Get all variants with product info
     const { data: variants, error } = await supabase
@@ -424,11 +425,41 @@ export const productAdminApi = {
       variants?.filter((v) => v.stock > 0 && v.stock < 10).length || 0;
     const outOfStock = variants?.filter((v) => v.stock === 0).length || 0;
 
+    //  Get category breakdown
+    const { data: categoryData, error: catError } = await supabase
+      .from("products")
+      .select(
+        `
+      category_id,
+      categories!category_id (
+        name
+      )
+    `,
+      )
+      .eq("is_active", true);
+
+    if (catError) throw catError;
+
+    // Count products per category
+    const categoryMap = new Map<string, number>();
+    categoryData?.forEach((product: any) => {
+      const categoryName = product.categories?.name || "Uncategorized";
+      categoryMap.set(categoryName, (categoryMap.get(categoryName) || 0) + 1);
+    });
+
+    const by_category = Array.from(categoryMap.entries())
+      .map(([category_name, product_count]) => ({
+        category_name,
+        product_count,
+      }))
+      .sort((a, b) => b.product_count - a.product_count);
+
     return {
       total_products: uniqueProducts.size,
       low_stock_count: lowStock,
       out_of_stock_count: outOfStock,
       total_variants: variants?.length || 0,
+      by_category,
     };
   },
 };

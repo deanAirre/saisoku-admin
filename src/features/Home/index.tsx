@@ -22,6 +22,7 @@ function Home() {
     low_stock_count: 0,
     out_of_stock_count: 0,
     total_variants: 0,
+    by_category: [] as Array<{ category_name: string; product_count: number }>,
   });
 
   const [loading, setLoading] = useState(true);
@@ -176,6 +177,29 @@ function Home() {
                 {productStats.total_variants}
               </span>
             </div>
+
+            {productStats.by_category.length > 0 && (
+              <div className="border-t border-gray-200 pt-3">
+                <p className="text-xs text-gray-600 font-medium mb-2">
+                  By Category
+                </p>
+                <div className="space-y-2">
+                  {productStats.by_category.map((cat) => (
+                    <div
+                      key={cat.category_name}
+                      className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                    >
+                      <span className="text-sm text-gray-700">
+                        {cat.category_name}
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {cat.product_count}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {productStats.low_stock_count > 0 && (
               <div className="flex items-center justify-between p-3 bg-[#EE4B2B] rounded-lg border border-orange-200">
