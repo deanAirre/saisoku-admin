@@ -279,39 +279,6 @@ export default function AdminEditProduct() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0ABAB5]"
               />
             </div>
-            {/* Slug */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">
-                URL Slug *
-              </label>
-              <input
-                type="text"
-                value={variantFormData.slug}
-                onChange={(e) =>
-                  setVariantFormData({
-                    ...variantFormData,
-                    slug: e.target.value,
-                  })
-                }
-                className="w-full px-3 py-2 border rounded-lg"
-                placeholder="e.g., mickey-mouse-xl-red"
-              />
-              <button
-                type="button"
-                onClick={async () => {
-                  const generated = await createVariantSlug(
-                    variantFormData.variant_name,
-                    variantFormData.color,
-                    variantFormData.size,
-                    editingVariantId || undefined,
-                  );
-                  setVariantFormData({ ...variantFormData, slug: generated });
-                }}
-                className="mt-1 text-sm text-[#0ABAB5] hover:underline"
-              >
-                Auto-generate slug
-              </button>
-            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -472,6 +439,42 @@ export default function AdminEditProduct() {
                     }
                     className="w-full px-3 py-2 border rounded-lg"
                   />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">
+                    URL Slug *
+                  </label>
+                  <input
+                    type="text"
+                    value={variantFormData.slug}
+                    onChange={(e) =>
+                      setVariantFormData({
+                        ...variantFormData,
+                        slug: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="e.g., mickey-mouse-xl-red"
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const generated = await createVariantSlug(
+                        variantFormData.variant_name,
+                        variantFormData.color,
+                        variantFormData.size,
+                        editingVariantId || undefined,
+                      );
+                      setVariantFormData({
+                        ...variantFormData,
+                        slug: generated,
+                      });
+                    }}
+                    className="mt-1 text-sm text-[#0ABAB5] hover:underline"
+                  >
+                    Auto-generate slug
+                  </button>
                 </div>
 
                 {/* Color Name (Optional) */}
