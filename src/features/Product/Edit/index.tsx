@@ -17,6 +17,7 @@ import type {
   ProductWithVariants,
   Variant,
 } from "../../../services/products/type";
+import { createVariantSlug } from "../../../utils/slug";
 
 export default function AdminEditProduct() {
   const { id } = useParams<{ id: string }>();
@@ -32,6 +33,7 @@ export default function AdminEditProduct() {
   const [isAddingVariant, setIsAddingVariant] = useState(false);
   const [variantFormData, setVariantFormData] = useState({
     sku: "",
+    slug: "",
     variant_name: "",
     size: "",
     color: "",
@@ -104,6 +106,7 @@ export default function AdminEditProduct() {
     setEditingVariantId(null);
     setVariantFormData({
       sku: "",
+      slug: "",
       variant_name: "",
       size: "",
       color: "",
@@ -118,6 +121,7 @@ export default function AdminEditProduct() {
     setIsAddingVariant(false);
     setVariantFormData({
       sku: variant.sku,
+      slug: variant.slug,
       variant_name: variant.variant_name,
       size: variant.size || "",
       color: variant.color || "",
@@ -274,6 +278,39 @@ export default function AdminEditProduct() {
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0ABAB5]"
               />
+            </div>
+            {/* Slug */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">
+                URL Slug *
+              </label>
+              <input
+                type="text"
+                value={variantFormData.slug}
+                onChange={(e) =>
+                  setVariantFormData({
+                    ...variantFormData,
+                    slug: e.target.value,
+                  })
+                }
+                className="w-full px-3 py-2 border rounded-lg"
+                placeholder="e.g., mickey-mouse-xl-red"
+              />
+              <button
+                type="button"
+                onClick={async () => {
+                  const generated = await createVariantSlug(
+                    variantFormData.variant_name,
+                    variantFormData.color,
+                    variantFormData.size,
+                    editingVariantId || undefined,
+                  );
+                  setVariantFormData({ ...variantFormData, slug: generated });
+                }}
+                className="mt-1 text-sm text-[#0ABAB5] hover:underline"
+              >
+                Auto-generate slug
+              </button>
             </div>
 
             <div>

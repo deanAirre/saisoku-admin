@@ -8,6 +8,7 @@ import type {
   CreateProductRequest,
   CreateVariantRequest,
 } from "../../../services/products/type";
+import { createVariantSlug } from "../../../utils/slug";
 
 export default function AdminCreateProduct() {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ export default function AdminCreateProduct() {
   // First variant form data (required)
   const [variantData, setVariantData] = useState({
     sku: "",
+    slug: "",
     variant_name: "",
     size: "",
     color: "",
@@ -106,6 +108,7 @@ export default function AdminCreateProduct() {
       const variantRequest: CreateVariantRequest = {
         product_id: product.id,
         sku: variantData.sku.trim(),
+        slug: variantData.slug.trim(),
         variant_name: variantData.variant_name.trim(),
         size: variantData.size || undefined,
         color: variantData.color || undefined,
@@ -338,6 +341,39 @@ export default function AdminCreateProduct() {
                   placeholder="e.g., Mickey Mouse Doll - XL Red"
                   required
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  URL Slug *
+                </label>
+                <input
+                  type="text"
+                  value={variantData.slug}
+                  onChange={(e) =>
+                    setVariantData({ ...variantData, slug: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0ABAB5]"
+                  placeholder="e.g., mickey-mouse-xl-red"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Auto-generated from variant name, color, and size. You can
+                  customize it.
+                </p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const generated = await createVariantSlug(
+                      variantData.variant_name,
+                      variantData.color,
+                      variantData.size,
+                    );
+                    setVariantData({ ...variantData, slug: generated });
+                  }}
+                  className="mt-1 text-sm text-[#0ABAB5] hover:underline"
+                >
+                  Auto-generate slug
+                </button>
               </div>
 
               <div>

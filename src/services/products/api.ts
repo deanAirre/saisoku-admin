@@ -14,7 +14,8 @@ import type { Product, Variant, VariantImage } from "./type";
 export const productAdminApi = {
   // ========== PRODUCT CRUD ==========
 
-  // Get all products for admin (with variants and category name)
+  // Get all products for admin (with variants and category name
+
   async getAllProductsAdmin(): Promise<ProductWithVariantsAdmin[]> {
     const { data, error } = await supabase
       .from("products")

@@ -15,6 +15,7 @@ export interface Variant {
   id: string;
   product_id: string;
   sku: string;
+  slug: string;
   variant_name: string;
   size?: string;
   color?: string;
@@ -66,6 +67,7 @@ export interface UpdateProductRequest {
 export interface CreateVariantRequest {
   product_id: string;
   sku: string;
+  slug?: string;
   variant_name: string;
   size?: string;
   color?: string;
@@ -79,6 +81,7 @@ export interface CreateVariantRequest {
 // For updating variant
 export interface UpdateVariantRequest {
   sku?: string;
+  slug?: string;
   variant_name?: string;
   size?: string;
   color?: string;
