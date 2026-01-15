@@ -25,9 +25,6 @@ const LoginPage = () => {
       console.log("Attempting admin login");
       await loginAdmin({ email, password });
 
-      console.log("Admin login successful");
-      console.log("Fetching admin profile");
-      await refetchAdmin();
       console.log("Admin profile loaded, redirecting...");
       showToast({ message: "Login successful!", type: "success" });
 
