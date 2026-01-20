@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Save, X, Loader2, ArrowLeft, Upload } from "lucide-react";
+import { Save, X, Loader2, ArrowLeft, Upload, AlertCircle } from "lucide-react";
 import { productAdminApi } from "../../../services/products/api";
 import { categoryApi } from "../../../services/categories";
 import type { Category } from "../../../services/categories/type";
@@ -500,7 +500,8 @@ export default function AdminCreateProduct() {
                   <label className="cursor-pointer block">
                     <input
                       type="file"
-                      accept="image/*"
+                      id="product-images"
+                      accept="image/jpeg,image/jpg,image/png,image/webp,image/heif,image/heic"
                       multiple
                       onChange={(e) => {
                         if (e.target.files) {
@@ -509,6 +510,25 @@ export default function AdminCreateProduct() {
                       }}
                       className="hidden"
                     />
+                    <label
+                      htmlFor="product-images"
+                      className="cursor-pointer block"
+                    >
+                      <div className="text-center py-4">
+                        <Upload className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                        <p className="text-sm text-gray-600 font-medium">
+                          Click to upload images
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          PNG, JPG, WebP up to 10MB each
+                        </p>
+                        <p className="text-xs text-yellow-600 mt-1 flex items-center gap-1">
+                          <AlertCircle size={14} />
+                          HEIF/HEIC images may not display correctly in all
+                          browsers
+                        </p>
+                      </div>
+                    </label>
                     <div className="text-center py-4">
                       <Upload className="mx-auto h-12 w-12 text-gray-400 mb-2" />
                       <p className="text-sm text-gray-600 font-medium">
@@ -520,7 +540,7 @@ export default function AdminCreateProduct() {
                     </div>
                   </label>
 
-                  {/* Image Previews - ADD THIS BACK */}
+                  {/* Image Previews*/}
                   {selectedImages.length > 0 && (
                     <div className="mt-4">
                       <p className="text-sm text-gray-600 mb-2">

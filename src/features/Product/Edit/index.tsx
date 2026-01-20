@@ -8,6 +8,7 @@ import {
   Edit2,
   Trash2,
   Upload,
+  AlertCircle,
 } from "lucide-react";
 import { productAdminApi } from "../../../services/products/api";
 import productApi from "../../../services/products/productsapi";
@@ -709,19 +710,43 @@ export default function AdminEditProduct() {
                         Upload Images
                       </>
                     )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      disabled={uploadingImage === variant.id}
-                      onChange={(e) => {
-                        const files = e.target.files;
-                        if (files && files.length > 0) {
-                          handleImageUpload(variant.id, files);
-                        }
-                      }}
-                    />
+                    <div>
+                      <input
+                        type="file"
+                        id={`upload-${variant.id}`}
+                        accept="image/jpeg,image/jpg,image/png,image/webp,image/heif,image/heic"
+                        multiple
+                        className="hidden"
+                        disabled={uploadingImage === variant.id}
+                        onChange={(e) => {
+                          const files = e.target.files;
+                          if (files && files.length > 0) {
+                            handleImageUpload(variant.id, files);
+                          }
+                        }}
+                      />
+                      <label
+                        htmlFor={`upload-${variant.id}`}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 cursor-pointer w-fit"
+                      >
+                        {uploadingImage === variant.id ? (
+                          <>
+                            <Loader2 size={18} className="animate-spin" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload size={18} />
+                            Upload Images
+                          </>
+                        )}
+                      </label>
+                      <p className="text-xs text-yellow-600 mt-1 flex items-center gap-1">
+                        <AlertCircle size={14} />
+                        HEIF/HEIC images may not display correctly in all
+                        browsers
+                      </p>
+                    </div>
                   </label>
                 </div>
 
