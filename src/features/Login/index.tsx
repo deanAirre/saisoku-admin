@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import backgroundImg from "../../assets/saisoku-wall_2.jpg";
 import { Eye, EyeOff } from "lucide-react";
-import { useAdmin } from "../../context/admin-context";
 import { loginAdmin } from "../../services/user/admin/api";
 import { useToast } from "../../context/toast-context";
+import { logger } from "../../services/log/api";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -13,7 +13,6 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { refetchAdmin } = useAdmin();
   const { showToast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -32,12 +31,18 @@ const LoginPage = () => {
       console.log("Fetching admin profile");
       navigate("/admin", { replace: true });
     } catch (err: any) {
-      console.error("Admin login error:", err);
       showToast({
         message: err.message || "Login failed. Please check your credentials.",
         type: "error",
         duration: 5000,
       });
+      // Log
+      logger.error(
+        err.message || "Login failed",
+        "admin_login",
+        { email },
+        err,
+      );
     } finally {
       setLoading(false);
     }

@@ -75,8 +75,7 @@ export default function Navbar() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 h-screen bg-white border-r border-gray-200 z-40 transition-all duration-300
-          ${isCollapsed ? "w-20" : "w-64"}
+          fixed top-0 left-0 h-screen bg-white border-r border-gray-200 z-50 transition-all duration-300
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >

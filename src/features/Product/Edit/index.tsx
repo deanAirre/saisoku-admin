@@ -18,6 +18,7 @@ import type {
   Variant,
 } from "../../../services/products/type";
 import { createVariantSlug } from "../../../utils/slug";
+import { useToast } from "../../../context/toast-context";
 
 export default function AdminEditProduct() {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +28,7 @@ export default function AdminEditProduct() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { showToast } = useToast();
 
   // Edit states
   const [editingVariantId, setEditingVariantId] = useState<string | null>(null);
@@ -83,7 +85,10 @@ export default function AdminEditProduct() {
       setCategories(categoriesData);
     } catch (error) {
       console.error("Failed to load data:", error);
-      alert("Failed to load product");
+      showToast({
+        message: "Failed to load product",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -94,10 +99,16 @@ export default function AdminEditProduct() {
     setSaving(true);
     try {
       await productAdminApi.updateProduct(id, productFormData);
-      alert("Product updated!");
+      showToast({
+        message: "Product updated successfully!",
+        type: "success",
+      });
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to update product");
+      showToast({
+        message: error.message || "Failed to update product",
+        type: "error",
+      });
     } finally {
       setSaving(false);
     }
@@ -156,16 +167,22 @@ export default function AdminEditProduct() {
           product_id: id,
           ...variantFormData,
         });
-        alert("Variant added!");
+        showToast({ message: "Variant added successfully!", type: "success" });
       } else if (editingVariantId) {
         await productAdminApi.updateVariant(editingVariantId, variantFormData);
-        alert("Variant updated!");
+        showToast({
+          message: "Variant updated successfully!",
+          type: "success",
+        });
       }
       setIsAddingVariant(false);
       setEditingVariantId(null);
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to save variant");
+      showToast({
+        message: error.message || "Failed to save variant",
+        type: "error",
+      });
     } finally {
       setSaving(false);
     }
@@ -175,10 +192,16 @@ export default function AdminEditProduct() {
     if (!confirm("Delete this variant?")) return;
     try {
       await productAdminApi.deleteVariant(variantId);
-      alert("Variant deleted!");
+      showToast({
+        message: "Variant deleted successfully!",
+        type: "success",
+      });
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to delete variant");
+      showToast({
+        message: error.message || "Failed to delete variant",
+        type: "error",
+      });
     }
   };
 
@@ -199,10 +222,16 @@ export default function AdminEditProduct() {
         ),
       );
       await Promise.all(uploads);
-      alert(`${files.length} image(s) uploaded!`);
+      showToast({
+        message: `${files.length} image(s) uploaded successfully!`,
+        type: "success",
+      });
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to upload images");
+      showToast({
+        message: error.message || "Failed to upload images",
+        type: "error",
+      });
     } finally {
       setUploadingImage(null);
     }
@@ -216,20 +245,33 @@ export default function AdminEditProduct() {
     if (!confirm("Delete this image?")) return;
     try {
       await productAdminApi.deleteVariantImage(imageId, imageUrl, variantId);
-      alert("Image deleted!");
+      showToast({
+        message: "Image deleted successfully!",
+        type: "success",
+      });
+
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to delete image");
+      showToast({
+        message: error.message || "Failed to delete image",
+        type: "error",
+      });
     }
   };
 
   const handleSetPrimaryImage = async (imageId: string, variantId: string) => {
     try {
       await productAdminApi.setPrimaryImage(imageId, variantId);
-      alert("Primary image updated!");
+      showToast({
+        message: "Primary image updated!",
+        type: "success",
+      });
       loadData();
     } catch (error: any) {
-      alert(error.message || "Failed to set primary");
+      showToast({
+        message: error.message || "Failed to set primary image",
+        type: "error",
+      });
     }
   };
 

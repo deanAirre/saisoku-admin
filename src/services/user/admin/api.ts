@@ -1,4 +1,5 @@
 import { supabase } from "../../api";
+import { logger } from "../../log/api";
 import type {
   AdminLoginRequest,
   AdminProfile,
@@ -6,22 +7,31 @@ import type {
 } from "./type";
 
 export const loginAdmin = async (credentials: AdminLoginRequest) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: credentials.email,
-    password: credentials.password,
-  });
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: credentials.email,
+      password: credentials.password,
+    });
 
-  if (error) throw error;
+    if (error) {
+      await logger.error("Admin login failed", "admin_login_api", {
+        email: credentials.email,
+        error: error.message,
+      });
+      throw error;
+    }
 
-  // ⭐ Update last_login timestamp
-  if (data.user) {
-    await supabase
-      .from("admins")
-      .update({ last_login: new Date().toISOString() })
-      .eq("user_id", data.user.id);
+    // Update last_login...
+    return { user: data.user, session: data.session };
+  } catch (error: any) {
+    await logger.error(
+      "Admin login exception",
+      "admin_login_api",
+      { email: credentials.email },
+      error,
+    );
+    throw error;
   }
-
-  return { user: data.user, session: data.session };
 };
 
 // Logout admin
@@ -129,21 +139,38 @@ export const isSuperAdmin = async (): Promise<boolean> => {
 
 // Delete admin by superadmin
 export const deleteAdmin = async (adminId: string): Promise<void> => {
-  // Check if current user is super_admin
-  const isSuperAdminUser = await isSuperAdmin();
-  if (!isSuperAdminUser) {
-    throw new Error("Unauthorized: Only super admins can delete admins");
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      throw new Error("Not authenticated");
+    }
+
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-admin`,
+      {
+        method: "{POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ adminId }),
+      },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to delete admin");
+    }
+  } catch (error: any) {
+    await logger.error(
+      "Failed to delete admin",
+      "admin_delete",
+      { adminId },
+      error,
+    );
+    throw error;
   }
-
-  // Check if trying to delete self
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (user?.id === adminId) {
-    throw new Error("Cannot delete your own account");
-  }
-
-  const { error } = await supabase.from("admins").delete().eq("id", adminId);
-
-  if (error) throw error;
 };

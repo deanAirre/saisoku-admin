@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Save, X, Loader2, ArrowLeft } from "lucide-react";
+import { Save, X, Loader2, ArrowLeft, Upload } from "lucide-react";
 import { productAdminApi } from "../../../services/products/api";
 import { categoryApi } from "../../../services/categories";
 import type { Category } from "../../../services/categories/type";
@@ -9,13 +9,15 @@ import type {
   CreateVariantRequest,
 } from "../../../services/products/type";
 import { createVariantSlug } from "../../../utils/slug";
+import { useToast } from "../../../context/toast-context";
 
 export default function AdminCreateProduct() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
-
+  const [_categoriesLoading, setCategoriesLoading] = useState(true);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const { showToast } = useToast();
   // Product form data
   const [productData, setProductData] = useState<CreateProductRequest>({
     name: "",
@@ -59,7 +61,10 @@ export default function AdminCreateProduct() {
       }
     } catch (error) {
       console.error("Failed to load categories:", error);
-      alert("Failed to load categories");
+      showToast({
+        message: "Failed to load categories",
+        type: "error",
+      });
     } finally {
       setCategoriesLoading(false);
     }
@@ -77,34 +82,32 @@ export default function AdminCreateProduct() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation
+    // Validation with toasts
     if (!productData.name.trim()) {
-      alert("Product name is required");
+      showToast({ message: "Product name is required", type: "error" });
       return;
     }
     if (!productData.category_id) {
-      alert("Please select a category");
+      showToast({ message: "Please select a category", type: "error" });
       return;
     }
     if (!variantData.sku.trim()) {
-      alert("Variant SKU is required");
+      showToast({ message: "Variant SKU is required", type: "error" });
       return;
     }
     if (!variantData.variant_name.trim()) {
-      alert("Variant name is required");
+      showToast({ message: "Variant name is required", type: "error" });
       return;
     }
     if (variantData.price <= 0) {
-      alert("Price must be greater than 0");
+      showToast({ message: "Price must be greater than 0", type: "error" });
       return;
     }
 
     setLoading(true);
     try {
-      // 1. Create product
       const product = await productAdminApi.createProduct(productData);
 
-      // 2. Create first variant
       const variantRequest: CreateVariantRequest = {
         product_id: product.id,
         sku: variantData.sku.trim(),
@@ -118,25 +121,37 @@ export default function AdminCreateProduct() {
         is_active: true,
       };
 
-      await productAdminApi.createVariant(variantRequest);
+      const createdVariant =
+        await productAdminApi.createVariant(variantRequest);
 
-      alert("Product created successfully!");
+      if (selectedImages.length > 0) {
+        const uploadPromises = selectedImages.map((file, index) =>
+          productAdminApi.uploadVariantImage(
+            createdVariant.id,
+            file,
+            index,
+            index === 0,
+          ),
+        );
+        await Promise.all(uploadPromises);
+      }
+
+      showToast({
+        message: "Product created successfully!",
+        type: "success",
+      });
+
       navigate(`/admin/products/${product.id}/edit`);
     } catch (error: any) {
       console.error("Failed to create product:", error);
-      alert(error.message || "Failed to create product");
+      showToast({
+        message: error.message || "Failed to create product",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
   };
-
-  if (categoriesLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-[#0ABAB5] animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 lg:p-6">
@@ -475,6 +490,72 @@ export default function AdminCreateProduct() {
                   min="0"
                   required
                 />
+              </div>
+              {/* Image Upload Section */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Product Images (Optional)
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-[#0ABAB5] transition">
+                  <label className="cursor-pointer block">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => {
+                        if (e.target.files) {
+                          setSelectedImages(Array.from(e.target.files));
+                        }
+                      }}
+                      className="hidden"
+                    />
+                    <div className="text-center py-4">
+                      <Upload className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-600 font-medium">
+                        Click to upload images
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        PNG, JPG, GIF up to 10MB each
+                      </p>
+                    </div>
+                  </label>
+
+                  {/* Image Previews - ADD THIS BACK */}
+                  {selectedImages.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-600 mb-2">
+                        {selectedImages.length} image(s) selected
+                      </p>
+                      <div className="grid grid-cols-4 gap-2">
+                        {selectedImages.map((file, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={`Preview ${index + 1}`}
+                              className="w-full h-20 object-cover rounded border-2 border-gray-200"
+                            />
+                            {index === 0 && (
+                              <span className="absolute top-1 left-1 bg-yellow-400 text-xs font-semibold px-2 py-0.5 rounded">
+                                Primary
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedImages(
+                                  selectedImages.filter((_, i) => i !== index),
+                                );
+                              }}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 opacity-0 group-hover:opacity-100 transition"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

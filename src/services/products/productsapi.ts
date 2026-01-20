@@ -60,7 +60,6 @@ export const productApi = {
     `,
       )
       .eq("id", id)
-      .eq("is_active", true)
       .single();
 
     if (error) {
@@ -83,7 +82,6 @@ export const productApi = {
     return data;
   },
 
-  // Get product by variant ID (for detail pages)
   // Get product by variant ID (for detail pages)
   async getProductByVariantId(
     variantId: string,
@@ -113,7 +111,6 @@ export const productApi = {
     `,
       )
       .eq("id", variant.product_id)
-      .eq("is_active", true)
       .single();
 
     if (error) {

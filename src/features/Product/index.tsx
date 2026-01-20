@@ -191,7 +191,9 @@ export default function AdminProductList() {
                         {/* Product Row */}
                         <tr
                           key={product.id}
-                          className="hover:bg-gray-50 transition"
+                          className={`hover:bg-gray-50 transition ${
+                            !product.is_active ? "bg-gray-100 opacity-60" : ""
+                          }`}
                         >
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
@@ -206,8 +208,14 @@ export default function AdminProductList() {
                                 )}
                               </button>
                               <div>
-                                <div className="font-medium text-gray-900">
+                                <div className="font-medium text-gray-900 flex items-center gap-2">
                                   {product.name}
+                                  {/* ADD THIS BADGE */}
+                                  {!product.is_active && (
+                                    <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded-full font-semibold">
+                                      INACTIVE
+                                    </span>
+                                  )}
                                 </div>
                                 {product.is_featured && (
                                   <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
@@ -216,7 +224,7 @@ export default function AdminProductList() {
                                 )}
                               </div>
                             </div>
-                          </td>
+                          </td>{" "}
                           <td className="px-6 py-4 text-sm text-gray-600">
                             {product.category_name || "-"}
                           </td>
