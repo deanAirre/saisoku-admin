@@ -150,7 +150,7 @@ export const deleteAdmin = async (adminId: string): Promise<void> => {
     const response = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-admin`,
       {
-        method: "{POST",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,

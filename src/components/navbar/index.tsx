@@ -40,7 +40,7 @@ export default function Navbar() {
   const handleLogout = async () => {
     if (confirm("Are you sure you want to logout?")) {
       await signOut();
-      navigate("/", { replace: true });
+      navigate("/admin", { replace: true });
     }
   };
 
@@ -67,9 +67,11 @@ export default function Navbar() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 h-screen bg-white border-r border-gray-200 z-50 transition-all duration-300
-          ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-        `}
+    fixed top-0 left-0 h-screen bg-white border-r border-gray-200 z-50 transition-all duration-300
+    ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+    ${isCollapsed ? "lg:w-20" : "lg:w-64"}
+    w-64
+  `}
       >
         {/* Logo Section */}
         <div className="h-20 flex items-center justify-center border-b border-gray-200 px-4">

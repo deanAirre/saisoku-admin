@@ -59,6 +59,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({
       const mappedAdmin = mapApiAdminToAdmin(profile);
       setAdmin(mappedAdmin);
     } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        return;
+      }
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch admin profile";
       setError(errorMessage);
