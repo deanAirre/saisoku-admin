@@ -732,7 +732,7 @@ export default function AdminEditProduct() {
                   <p className="text-xs text-yellow-600 mt-1 flex items-center gap-1">
                     <AlertCircle size={14} />
                     Some type of images may not display correctly in all
-                    browsers
+                    browsers, consult IT if it happens
                   </p>
                 </div>
 

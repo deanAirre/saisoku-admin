@@ -174,3 +174,17 @@ export const deleteAdmin = async (adminId: string): Promise<void> => {
     throw error;
   }
 };
+
+// Auto cancel order after 2 weeks trigger
+export const autoCancelOldPendingOrders = async (): Promise<void> => {
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 14); // 2 weeks
+
+  const { error } = await supabase
+    .from("orders")
+    .update({ status: "cancelled" })
+    .eq("status", "pending_payment")
+    .lt("created_at", weekAgo.toISOString());
+
+  if (error) throw error;
+};

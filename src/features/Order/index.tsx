@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { OrderStatus, OrderWithItems } from "../../services/order/type";
 import { fetchAllOrders, updateOrderStatus } from "../../services/order/api";
+import { useToast } from "../../context/toast-context";
+import { autoCancelOldPendingOrders } from "../../services/user/admin/api";
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("id-ID", {
@@ -23,6 +25,7 @@ function OrderList() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<OrderStatus | "all">("all");
+  const { showToast } = useToast();
 
   useEffect(() => {
     loadOrders();
@@ -37,12 +40,18 @@ function OrderList() {
     "cancelled",
   ];
 
+  const ADMIN_EDITABLE_STATUSES: OrderStatus[] = ["processing", "shipped"];
+
   const loadOrders = async () => {
     try {
       setLoading(true);
+
+      // Auto-cancel old pending orders (admin-only, on load)
+      await autoCancelOldPendingOrders();
+
       const status = filterStatus === "all" ? undefined : filterStatus;
-      const data = await fetchAllOrders({ status }); // ✅ pass as object
-      setOrders(data.orders); // ✅ extract orders array
+      const data = await fetchAllOrders({ status });
+      setOrders(data.orders);
     } catch (error) {
       console.error("Failed to load orders:", error);
     } finally {
@@ -54,9 +63,19 @@ function OrderList() {
     orderId: string,
     newStatus: OrderStatus,
   ) => {
+    const order = orders.find((o) => o.id === orderId);
+
+    // Only allow processing if payment was uploaded
+    if (newStatus === "processing" && order?.status !== "payment_uploaded") {
+      showToast({
+        message: "Cannot process order: Payment proof must be uploaded first",
+        type: "warning",
+      });
+      return;
+    }
+
     try {
       await updateOrderStatus(orderId, newStatus);
-      // Update local state
       setOrders((prev) =>
         prev.map((order) =>
           order.id === orderId ? { ...order, status: newStatus } : order,
@@ -170,7 +189,15 @@ function OrderList() {
                         }
                         className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
-                        {ORDER_STATUSES.map((status) => (
+                        {/* Show current status if it's not editable */}
+                        {!ADMIN_EDITABLE_STATUSES.includes(order.status) && (
+                          <option value={order.status} disabled>
+                            {order.status.replace(/_/g, " ").toUpperCase()}
+                          </option>
+                        )}
+
+                        {/* Show editable statuses */}
+                        {ADMIN_EDITABLE_STATUSES.map((status) => (
                           <option key={status} value={status}>
                             {status.replace(/_/g, " ").toUpperCase()}
                           </option>
