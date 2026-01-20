@@ -40,7 +40,7 @@ export default function Navbar() {
   const handleLogout = async () => {
     if (confirm("Are you sure you want to logout?")) {
       await signOut();
-      navigate("/");
+      navigate("/", { replace: true });
     }
   };
 
@@ -63,14 +63,6 @@ export default function Navbar() {
           {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
-
-      {/* Mobile Overlay */}
-      {isMobileOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
 
       {/* Sidebar */}
       <aside
