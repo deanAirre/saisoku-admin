@@ -8,6 +8,7 @@ import {
   CheckCircle,
   XCircle,
   MessageSquare,
+  CreditCard,
 } from "lucide-react";
 import {
   fetchOrderByIdAdmin,
@@ -15,6 +16,7 @@ import {
   approvePayment,
   rejectPayment,
   updateOrderStatus,
+  updateShippingFee,
 } from "../../services/order/api";
 import type {
   OrderWithItems,
@@ -29,6 +31,8 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
   shipped: "bg-indigo-100 text-indigo-800 border-indigo-300",
   delivered: "bg-green-100 text-green-800 border-green-300",
   cancelled: "bg-red-100 text-red-800 border-red-300",
+  pending_shipping_cost: "bg-orange-100 text-orange-800 border-orange-300", // ADD
+  awaiting_customer_confirmation: "bg-cyan-100 text-cyan-800 border-cyan-300", // ADD
 };
 
 const ORDER_STATUSES: OrderStatus[] = [
@@ -38,6 +42,8 @@ const ORDER_STATUSES: OrderStatus[] = [
   "shipped",
   "delivered",
   "cancelled",
+  "pending_shipping_cost",
+  "awaiting_customer_confirmation",
 ];
 
 function formatCurrency(amount: number): string {
@@ -66,6 +72,8 @@ export default function OrderDetail() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [shippingFee, setShippingFee] = useState<string>("");
+  const [isEditingShipping, setIsEditingShipping] = useState(false);
 
   // TODO: Add admin notes functionality
   // const [adminNotes, setAdminNotes] = useState("");
@@ -75,6 +83,12 @@ export default function OrderDetail() {
       loadOrder();
     }
   }, [orderId]);
+
+  useEffect(() => {
+    if (order) {
+      setShippingFee(order.shipping_fee?.toString() || "0");
+    }
+  }, [order]);
 
   const loadOrder = async () => {
     setLoading(true);
@@ -193,6 +207,32 @@ export default function OrderDetail() {
     );
   }
 
+  const handleUpdateShippingFee = async () => {
+    if (!order) return;
+
+    const fee = parseInt(shippingFee);
+    if (isNaN(fee) || fee < 0) {
+      alert("Please enter a valid shipping fee");
+      return;
+    }
+
+    if (!confirm(`Set shipping fee to Rp ${fee.toLocaleString()}?`)) {
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await updateShippingFee(order.id, fee);
+      await loadOrder();
+      setIsEditingShipping(false);
+      alert("Shipping fee updated successfully!");
+    } catch (err: any) {
+      alert(err.message || "Failed to update shipping fee");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6 lg:p-6">
       <div className="w-full">
@@ -280,8 +320,20 @@ export default function OrderDetail() {
                   </div>
                 ))}
               </div>
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex justify-between text-lg font-bold">
+              <div className="mt-4 pt-4 border-t space-y-2">
+                <div className="flex justify-between text-gray-700">
+                  <span className="font-semibold">Subtotal</span>
+                  <span className="font-semibold">
+                    {formatCurrency(order.subtotal || order.total_amount)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-gray-700">
+                  <span className="font-semibold">Shipping Fee</span>
+                  <span className="font-semibold">
+                    {formatCurrency(order.shipping_fee || 0)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-lg font-bold pt-2 border-t">
                   <span>Total Amount</span>
                   <span className="text-[#0ABAB5]">
                     {formatCurrency(order.total_amount)}
@@ -289,6 +341,94 @@ export default function OrderDetail() {
                 </div>
               </div>
             </div>
+
+            {/* Shipping Fee Management */}
+            {(order.status === "pending_shipping_cost" ||
+              order.status === "awaiting_customer_confirmation") && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="text-[#0ABAB5]" size={24} />
+                    <h2 className="text-xl font-semibold">Shipping Fee</h2>
+                  </div>
+                  {!isEditingShipping && (
+                    <button
+                      onClick={() => setIsEditingShipping(true)}
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
+
+                {isEditingShipping ? (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Shipping Fee (Rp)
+                      </label>
+                      <input
+                        type="number"
+                        value={shippingFee}
+                        onChange={(e) => setShippingFee(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter shipping fee"
+                        min="0"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleUpdateShippingFee}
+                        disabled={actionLoading}
+                        className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                      >
+                        {actionLoading ? "Updating..." : "Update Shipping Fee"}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsEditingShipping(false);
+                          setShippingFee(order.shipping_fee?.toString() || "0");
+                        }}
+                        className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium">
+                        Current Shipping Fee:
+                      </span>
+                      <span className="text-2xl font-bold text-[#0ABAB5]">
+                        Rp {order.shipping_fee?.toLocaleString() || "0"}
+                      </span>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Subtotal:</span>
+                        <span className="font-semibold">
+                          Rp {order.subtotal?.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm mt-1">
+                        <span className="text-gray-600">Shipping:</span>
+                        <span className="font-semibold">
+                          Rp {order.shipping_fee?.toLocaleString() || "0"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between font-bold mt-2 pt-2 border-t border-gray-200">
+                        <span>Total:</span>
+                        <span className="text-[#0ABAB5]">
+                          Rp {order.total_amount?.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Shipping Address */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

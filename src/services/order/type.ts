@@ -3,6 +3,8 @@ export interface Order {
   user_id: string;
   order_number: string;
   total_amount: number;
+  shipping_fee: number;
+  subtotal: number;
   status: OrderStatus;
   recipient_name: string;
   phone: string;
@@ -24,7 +26,9 @@ export type OrderStatus =
   | "processing"
   | "shipped"
   | "delivered"
-  | "cancelled";
+  | "cancelled"
+  | "pending_shipping_cost"
+  | "awaiting_customer_confirmation";
 
 export interface OrderItem {
   id: string;
@@ -65,6 +69,9 @@ export interface CreateOrderRequest {
   variant_id?: string;
   quantity?: number;
   shipping_address: ShippingAddress;
+  order_notes?: string;
+  shipping_fee?: number;
+  subtotal?: number;
 }
 
 export interface ShippingAddress {

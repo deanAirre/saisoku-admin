@@ -38,6 +38,8 @@ function OrderList() {
     "shipped",
     "delivered",
     "cancelled",
+    "pending_shipping_cost",
+    "awaiting_customer_confirmation",
   ];
 
   const ADMIN_EDITABLE_STATUSES: OrderStatus[] = ["processing", "shipped"];

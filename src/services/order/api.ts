@@ -300,6 +300,8 @@ export const getOrderStats = async (): Promise<{
   shipped: number;
   delivered: number;
   cancelled: number;
+  pending_shipping_cost: number;
+  awaiting_customer_confirmation: number;
 }> => {
   const { data, error } = await supabase.from("orders").select("status");
 
@@ -313,6 +315,8 @@ export const getOrderStats = async (): Promise<{
     shipped: 0,
     delivered: 0,
     cancelled: 0,
+    pending_shipping_cost: 0,
+    awaiting_customer_confirmation: 0,
   };
 
   data.forEach((order) => {
@@ -323,4 +327,45 @@ export const getOrderStats = async (): Promise<{
   });
 
   return stats;
+};
+
+// Admin: Update shipping fee for an order
+export const updateShippingFee = async (
+  orderId: string,
+  shippingFee: number,
+): Promise<OrderWithItems> => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Not Authenticated");
+
+  // Get current order to calcualte new total
+  const { data: currentOrder, error: fetchError } = await supabase
+    .from("orders")
+    .select("subtotal")
+    .eq("id", orderId)
+    .single();
+
+  if (fetchError) throw fetchError;
+
+  const newTotal = currentOrder.subtotal + shippingFee;
+
+  // Update order with shipping fee
+  const { data, error } = await supabase
+    .from("orders")
+    .update({
+      shipping_fee: shippingFee,
+      total_amount: newTotal,
+      status: "awaiting_customer_confirmation",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", orderId)
+    .select(
+      `*, order_items (id, order_id, variant_id, quantity, price_at_purchase, variant_snapshot, created_at)`,
+    )
+    .single();
+
+  if (error) throw error;
+  return data;
 };
